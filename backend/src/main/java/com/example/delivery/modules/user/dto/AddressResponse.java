@@ -5,6 +5,10 @@ import com.example.delivery.domain.entity.UserAddress;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 用户收货地址只读响应，供列表、新增、更新和设为默认地址接口复用；
+ * {@link #from(UserAddress)} 将持久化实体映射为对外结构。
+ */
 public record AddressResponse(
         Long id,
         Long userId,

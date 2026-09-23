@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 校验所需工具、Docker 访问、本地服务和依赖构件。
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -30,6 +31,7 @@ version_at_least() {
   [[ "$(printf '%s\n%s\n' "${required}" "${current}" | sort -V | head -n 1)" == "${required}" ]]
 }
 
+# IDEA 可能使用与 shell 不同的 JDK，因此单独检查 Java。
 if command_exists java; then
   java_spec="$(java -XshowSettings:properties -version 2>&1 | awk -F= '/java.specification.version/ {gsub(/[[:space:]]/, "", $2); print $2; exit}')"
   if [[ "${java_spec}" == "21" ]]; then

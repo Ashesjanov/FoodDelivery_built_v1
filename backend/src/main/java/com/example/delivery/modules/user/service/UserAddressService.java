@@ -14,7 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Transactional address ownership and default-address invariants. */
+/**
+ * 维护单个用户的收货地址，并保证有地址时始终存在一个默认地址。
+ * 依赖 {@link UserAddressMapper}；所有写操作使用事务，查询始终限定用户，避免跨用户访问。
+ */
 @Service
 public class UserAddressService {
     private static final int MAX_ADDRESSES_PER_USER = 20;
@@ -49,6 +52,7 @@ public class UserAddressService {
         }
 
         boolean defaultAddress = request.isDefault() == null ? count == 0 : request.isDefault();
+        // 首个地址自动成为默认地址；显式设为默认时先清除旧默认值。
         if (defaultAddress && count > 0) {
             clearDefault(userId);
         }
@@ -68,6 +72,7 @@ public class UserAddressService {
         UserAddress address = requireOwned(userId, addressId);
         boolean wasDefault = Boolean.TRUE.equals(address.getIsDefault());
         boolean defaultAddress = request.isDefault() == null ? wasDefault : request.isDefault();
+        // 还有其他地址时不得取消唯一默认地址；升为默认需在事务内替换原默认值。
         if (!defaultAddress && wasDefault && countForUser(userId) > 1) {
             throw new BizException(ErrorCode.BAD_REQUEST, "set another address as default before clearing this one");
         }
@@ -85,6 +90,7 @@ public class UserAddressService {
     public void delete(long userId, long addressId) {
         UserAddress address = requireOwned(userId, addressId);
         userAddressMapper.deleteById(address.getId());
+        // 删除默认地址后提升最早创建的剩余地址，确保结算始终有默认地址。
         if (Boolean.TRUE.equals(address.getIsDefault())) {
             promoteOldestDefault(userId);
         }
@@ -93,6 +99,7 @@ public class UserAddressService {
     @Transactional
     public AddressResponse setDefault(long userId, long addressId) {
         UserAddress address = requireOwned(userId, addressId);
+        // 先清除旧默认值再落库，保证事务内默认地址唯一。
         clearDefault(userId);
         address.setIsDefault(true);
         address.setUpdatedAt(LocalDateTime.now());

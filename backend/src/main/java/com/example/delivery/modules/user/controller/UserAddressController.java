@@ -22,6 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 当前用户收货地址 REST 控制器，统一入口为 {@code /api/users/me/addresses}。
+ * 提供列表、新增、查询、覆盖更新、删除和设为默认地址；所有路由要求登录，
+ * 并由 {@link UserAddressService} 校验地址归属和默认地址规则。
+ */
 @Tag(name = "User addresses")
 @RestController
 @RequestMapping("/api/users/me/addresses")

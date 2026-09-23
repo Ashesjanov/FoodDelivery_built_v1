@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 支付 REST 控制器：提供 /api/payments 下的模拟支付和支付记录查询入口。
+ * 仅依赖 {@link PaymentService}；所有端点要求登录，账户归属检查由服务层完成，
+ * 控制器本身不开启事务，模拟支付的原子性由服务层事务保证。
+ */
 @RestController
 @RequestMapping("/api/payments")
 @PreAuthorize("isAuthenticated()")

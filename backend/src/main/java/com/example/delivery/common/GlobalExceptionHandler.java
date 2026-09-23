@@ -20,7 +20,10 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Converts exceptions to the common response envelope without leaking internals. */
+/**
+ * 全局异常映射器，将业务、校验、认证、授权、数据约束和未知异常转换为 {@link ApiResponse}。
+ * 由 Spring MVC 自动调用；对外只返回稳定错误码，内部堆栈和数据库细节只写服务端日志。
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -35,6 +38,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidation(MethodArgumentNotValidException exception) {
         Map<String, String> fields = new LinkedHashMap<>();
         for (FieldError error : exception.getBindingResult().getFieldErrors()) {
+            // 每个字段只返回第一条错误，避免校验注解顺序导致响应内容不稳定。
             fields.putIfAbsent(error.getField(), error.getDefaultMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -70,6 +74,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception exception, HttpServletRequest request) {
+        // 兜底处理必须隐藏异常细节，防止向客户端泄露 SQL、配置或堆栈信息。
         log.error("Unhandled exception while processing {} {}", request.getMethod(), request.getRequestURI(), exception);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error(ErrorCode.INTERNAL_ERROR));
     }

@@ -11,6 +11,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 骑手工作档案实体，映射 delivery_rider 表，保存联系方式、位置、评分和接单能力。
+ * 由配送服务通过 DeliveryRiderMapper 查询和更新；位置及活跃单数存在高频并发写入。
+ */
 @Data
 @Builder
 @NoArgsConstructor

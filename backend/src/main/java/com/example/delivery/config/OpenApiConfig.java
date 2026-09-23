@@ -8,7 +8,10 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** OpenAPI metadata and bearer authentication support. */
+/**
+ * 提供 Swagger UI 使用的 API 元数据和 JWT Bearer 安全方案。
+ * 浏览 /swagger-ui.html 调试接口时，可对受保护端点预先配置访问令牌。
+ */
 @Configuration
 public class OpenApiConfig {
 

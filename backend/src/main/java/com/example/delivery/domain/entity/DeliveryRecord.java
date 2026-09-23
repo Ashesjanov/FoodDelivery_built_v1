@@ -11,6 +11,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 订单配送执行记录实体，映射 delivery_record 表，保存骑手、履约节点和取货凭证。
+ * 由配送服务通过 DeliveryRecordMapper 更新，状态与时间戳需与订单进度保持一致。
+ */
 @Data
 @Builder
 @NoArgsConstructor

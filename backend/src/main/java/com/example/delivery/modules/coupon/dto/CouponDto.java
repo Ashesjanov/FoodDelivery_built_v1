@@ -11,6 +11,10 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 优惠券活动、领取和查询的 DTO 集合。
+ * Bean Validation 只做字段级校验，时间窗、领取上限和状态流转由 {@link CouponService} 维护。
+ */
 public final class CouponDto {
     private CouponDto() {
     }

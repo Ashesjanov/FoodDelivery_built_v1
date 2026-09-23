@@ -9,6 +9,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 订单菜品明细实体，映射 order_item 表，保存下单时的名称、规格和价格快照。
+ * 由订单服务通过 OrderItemMapper 与订单主表一起维护，历史明细不得随菜单变化重写。
+ */
 @Data
 @Builder
 @NoArgsConstructor

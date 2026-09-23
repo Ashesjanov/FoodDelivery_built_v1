@@ -9,6 +9,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 商户与分类的关联实体，映射 merchant_category_rel 表，支持一家商户属于多个分类。
+ * 由商户服务通过 MerchantCategoryRelMapper 维护，关系调整需同时保证分类有效性和排序。
+ */
 @Data
 @Builder
 @NoArgsConstructor

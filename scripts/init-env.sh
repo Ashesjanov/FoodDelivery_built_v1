@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 创建包含唯一开发密钥的本地 `.env`；已有文件保持不变。
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"

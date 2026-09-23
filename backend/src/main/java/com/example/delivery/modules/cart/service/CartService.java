@@ -27,6 +27,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * 维护当前登录用户的购物车，并向订单流程提供已选条目。
+ * 依赖购物车、菜品、规格 Mapper 和 {@link MerchantService}；写操作使用事务，
+ * 所有查询通过 {@link SecurityUtils} 限定到当前用户，同商家、在售状态、库存和规格价格约束在此维护。
+ */
 @Service
 public class CartService {
     private final CartItemMapper cartMapper;
@@ -42,6 +47,7 @@ public class CartService {
         long userId = SecurityUtils.requireCurrentUserId();
         List<CartItem> items = active(userId);
         List<CartDto.ItemView> views = items.stream().map(this::view).toList();
+        // 总价按持久化单价乘数量后汇总。
         BigDecimal total = views.stream().map(CartDto.ItemView::subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
         return new CartDto.CartView(views, total, views.size());
     }
@@ -56,12 +62,14 @@ public class CartService {
         if (request.dishSpecId() != null && (spec == null || !spec.getDishId().equals(dish.getId()))) throw new BizException(ErrorCode.BAD_REQUEST, "规格与商品不匹配");
         Merchant merchant = merchantService.requireMerchant(dish.getMerchantId());
         List<CartItem> current = active(userId);
+        // 一笔订单只能结算同一商家，跨商家加购在落库前直接拒绝。
         if (!current.isEmpty() && current.stream().anyMatch(i -> !i.getMerchantId().equals(merchant.getId()))) {
             throw new BizException(ErrorCode.CONFLICT, "购物车只能包含同一商家商品");
         }
         CartItem item = current.stream().filter(i -> i.getDishId().equals(dish.getId()) && Objects.equals(i.getDishSpecId(), request.dishSpecId()))
                 .findFirst().orElse(null);
         int quantity = request.quantity();
+        // 同菜品同规格合并数量，并按合并后的总量再次校验库存。
         if (item != null) quantity += item.getQuantity();
         if (quantity > dish.getStock()) throw new BizException(ErrorCode.CONFLICT, "商品库存不足");
         if (item == null) {
@@ -81,6 +89,7 @@ public class CartService {
         CartItem item = require(id); Dish dish = dishMapper.selectById(item.getDishId());
         if (dish == null) throw new BizException(ErrorCode.NOT_FOUND);
         if (request.quantity() != null) {
+            // 修改数量时重新读取实时库存，不能沿用加购时的库存快照。
             if (dish.getStock() < request.quantity()) throw new BizException(ErrorCode.CONFLICT, "商品库存不足");
             item.setQuantity(request.quantity());
         }
@@ -96,6 +105,7 @@ public class CartService {
 
     @Transactional
     public void remove(Long id) {
+        // 删除采用状态迁移，便于订单流程区分有效、已结算和已移除条目。
         CartItem item = require(id); item.setStatus(CartItemStatus.REMOVED); item.setUpdatedAt(LocalDateTime.now()); cartMapper.updateById(item);
     }
 
@@ -111,6 +121,7 @@ public class CartService {
     }
 
     public void markCheckedOut(List<CartItem> items) {
+        // 订单创建成功后调用，防止同一购物车条目被重复结算。
         for (CartItem item : items) { item.setStatus(CartItemStatus.CHECKED_OUT); item.setUpdatedAt(LocalDateTime.now()); cartMapper.updateById(item); }
     }
 
@@ -135,6 +146,7 @@ public class CartService {
     }
 
     private BigDecimal unitPrice(Dish dish, DishSpec spec) {
+        // 成交单价等于菜品基础价加所选规格的价格偏移。
         return dish.getPrice().add(spec == null || spec.getPriceOffset() == null ? BigDecimal.ZERO : spec.getPriceOffset());
     }
 }

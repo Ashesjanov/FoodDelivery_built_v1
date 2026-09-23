@@ -9,7 +9,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/** Central CORS policy used by Spring MVC and Spring Security. */
+/**
+ * 集中定义前后端联调和生产前端所需的跨域策略。
+ * 创建的 bean 同时供 Web MVC 与 {@code SecurityConfig} 使用；来源由 app.cors.allowed-origins 配置，
+ * 允许凭证，因此不能与通配来源同时启用。
+ */
 @Configuration
 public class CorsConfig {
 

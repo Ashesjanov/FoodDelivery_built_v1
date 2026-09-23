@@ -10,6 +10,10 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 配送模块的请求和响应模型：覆盖骑手资料、在线状态、位置、配送备注和履约记录视图。
+ * 仅负责字段校验和数据传输，不包含接单状态机，也不参与事务或权限判断。
+ */
 public final class DeliveryDto {
     private DeliveryDto() {
     }

@@ -15,7 +15,10 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
-/** Creates and validates short-lived signed access tokens. */
+/**
+ * 创建、签名并校验短期访问 JWT，供登录服务生成令牌、过滤器恢复身份使用。
+ * 密钥来自 security.jwt.secret 或 JWT_SECRET，至少需要 256 位材料；令牌只允许 access 类型。
+ */
 @Service
 public class JwtService {
     private static final String TOKEN_TYPE = "access";
@@ -48,6 +51,7 @@ public class JwtService {
     }
 
     public UserPrincipal parseToken(String token) throws JwtException, IllegalArgumentException {
+        // JJWT 在此处验证签名和过期时间，任何篡改或过期都会抛出 JwtException。
         Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
         if (!TOKEN_TYPE.equals(claims.get("typ", String.class))) {
             throw new JwtException("Unsupported token type");
@@ -70,6 +74,7 @@ public class JwtService {
 
     private static SecretKey buildKey(String secret) {
         if (secret == null || secret.isBlank()) {
+            // 启动时快速失败，避免运行后所有登录令牌都无法验证。
             throw new IllegalArgumentException("security.jwt.secret must be configured in .env or JWT_SECRET");
         }
         byte[] secretBytes = decodeSecret(secret);

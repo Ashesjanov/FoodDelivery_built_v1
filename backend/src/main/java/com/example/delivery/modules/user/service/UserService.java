@@ -21,7 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** User profile and administrative account operations. */
+/**
+ * 提供个人资料、密码维护和管理员账号管理。
+ * 依赖 {@link UserAccountMapper}、{@link UserAddressMapper} 和 {@link PasswordEncoder}；
+ * 写操作使用事务、查询为只读事务，管理员权限由调用方控制器声明。
+ */
 @Service
 public class UserService {
     private final UserAccountMapper userAccountMapper;
@@ -57,6 +61,7 @@ public class UserService {
     @Transactional
     public void changePassword(long userId, PasswordChangeRequest request) {
         UserAccount user = require(userId);
+        // 先验证当前密码，再拒绝复用原密码，最后持久化新密码散列。
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
             throw new BizException(ErrorCode.INVALID_CREDENTIALS, "current password is incorrect");
         }
@@ -71,6 +76,7 @@ public class UserService {
     @Transactional
     public void deleteOwnAccount(long userId) {
         UserAccount user = require(userId);
+        // 地址是账号子数据，与账号在同一事务内删除。
         userAddressMapper.delete(Wrappers.<UserAddress>lambdaQuery().eq(UserAddress::getUserId, user.getId()));
         userAccountMapper.deleteById(user.getId());
     }

@@ -9,6 +9,11 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
+/**
+ * 创建或覆盖用户收货地址的写入 DTO。
+ * Bean Validation 在 REST 边界校验联系人、手机号、地址和经纬度，
+ * 服务层继续维护用户归属和默认地址约束。
+ */
 public record AddressRequest(
         @NotBlank @Size(max = 32) String contactName,
         @NotBlank @Pattern(regexp = "^1[3-9]\\d{9}$", message = "phone must be a valid mobile number") String phone,

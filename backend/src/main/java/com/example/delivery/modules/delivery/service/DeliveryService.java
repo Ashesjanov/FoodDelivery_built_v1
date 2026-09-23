@@ -29,7 +29,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-/** Rider profile and order delivery state transitions. */
+/**
+ * 配送服务：管理当前骑手资料，并维护订单从待接单到已送达的配送状态。
+ * 依赖骑手/配送记录/订单/用户 Mapper 和 {@link OrderPushService}；写方法均在事务内，
+ * 类级入口由控制器限制 RIDER 角色，服务内进一步隔离到当前骑手自己的数据。
+ */
 @Service
 public class DeliveryService {
     private static final int MAX_PAGE_SIZE = 200;
@@ -133,6 +137,7 @@ public class DeliveryService {
                 .eq(DeliveryRecord::getOrderId, orderId).last("limit 1"));
         LocalDateTime now = LocalDateTime.now();
         if (record == null) {
+            // 首次建配送记录时由 order_id 唯一约束阻止并发骑手重复建单。
             record = new DeliveryRecord();
             record.setOrderId(orderId);
             record.setRiderId(rider.getId());
@@ -142,6 +147,7 @@ public class DeliveryService {
             record.setUpdatedAt(now);
             recordMapper.insert(record);
         } else {
+            // 已有记录采用条件更新抢接：只有记录仍可领取且未被他人占用时才会更新成功。
             int claimed = recordMapper.update(null, new LambdaUpdateWrapper<DeliveryRecord>()
                     .eq(DeliveryRecord::getId, record.getId())
                     .and(q -> q.isNull(DeliveryRecord::getRiderId).or().eq(DeliveryRecord::getRiderId, rider.getId()))
@@ -164,6 +170,7 @@ public class DeliveryService {
                 .setSql("active_order_count = active_order_count + 1")
                 .set(DeliveryRider::getStatus, RiderStatus.BUSY)
                 .set(DeliveryRider::getUpdatedAt, now));
+        // 配送事件与订单事件走同一 /topic/orders/{orderId} 链路，事务提交后客户端才会收到。
         orderPushService.publishAfterCommit(orderId, order.getStatus().getCode(), "rider accepted the delivery order");
         return view(record);
     }
@@ -174,6 +181,7 @@ public class DeliveryService {
         DeliveryRecord record = requireOwnedRecord(orderId, rider.getId());
         requireOrder(orderId);
         LocalDateTime now = LocalDateTime.now();
+        // 配送记录和订单都以期望状态做条件更新，重复或并发操作不会越过 READY/ASSIGNED 状态。
         int updated = recordMapper.update(null, new LambdaUpdateWrapper<DeliveryRecord>()
                 .eq(DeliveryRecord::getId, record.getId())
                 .eq(DeliveryRecord::getRiderId, rider.getId())
@@ -232,6 +240,7 @@ public class DeliveryService {
             throw new BizException(ErrorCode.CONFLICT, "order is not currently out for delivery");
         }
 
+        // 送达后按实际仍处于配送中的记录恢复骑手在线状态，并累计完成单量。
         int remainingActive = activeCount(rider.getId());
         riderMapper.update(null, new LambdaUpdateWrapper<DeliveryRider>()
                 .eq(DeliveryRider::getId, rider.getId())

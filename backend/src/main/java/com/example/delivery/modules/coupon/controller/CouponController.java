@@ -8,6 +8,11 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * 优惠券 REST 控制器，统一入口为 {@code /api/coupons}。
+ * 提供活动查询、创建、领取和个人领取记录；REST 边界负责字段校验，
+ * {@link CouponService} 负责角色、时间、领取上限和优惠券状态规则。
+ */
 @RestController
 @RequestMapping("/api/coupons")
 public class CouponController {

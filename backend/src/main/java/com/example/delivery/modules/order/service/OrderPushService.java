@@ -7,7 +7,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.time.Instant;
 
-/** Publishes committed order changes to the order-specific STOMP topic. */
+/**
+ * 订单 WebSocket 推送服务：把订单状态事件发送到 STOMP 主题 /topic/orders/{orderId}。
+ * 依赖 {@link SimpMessagingTemplate}；在活动事务中仅注册 afterCommit 回调，
+ * 保证订阅端只收到已经提交成功的状态，无事务时立即发布。
+ */
 @Component
 public class OrderPushService {
     private final SimpMessagingTemplate messagingTemplate;
@@ -16,6 +20,7 @@ public class OrderPushService {
         this.messagingTemplate = messagingTemplate;
     }
 
+    /** 将事件写入订单专属主题；由订单、支付和配送服务的状态变更链路统一调用。 */
     public void publishAfterCommit(Long orderId, String status, String message) {
         Runnable publish = () -> messagingTemplate.convertAndSend("/topic/orders/" + orderId,
                 new OrderEvent(orderId, status, message, Instant.now()));
@@ -31,6 +36,7 @@ public class OrderPushService {
         }
     }
 
+    /** 发往 /topic/orders/{orderId} 的订单状态事件载荷。 */
     public record OrderEvent(Long orderId, String status, String message, Instant timestamp) {
     }
 }

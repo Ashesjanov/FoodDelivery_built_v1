@@ -18,6 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 评价 REST 控制器：提供 /api/reviews 下的创建评价、查看商家评价和商家回复入口。
+ * 仅依赖 {@link ReviewService}；类级要求登录，创建限客户/管理员，回复限商家/管理员，
+ * 控制器不开启事务，订单归属和商家所有者校验由服务层执行。
+ */
 @Tag(name = "Reviews")
 @RestController
 @RequestMapping("/api/reviews")

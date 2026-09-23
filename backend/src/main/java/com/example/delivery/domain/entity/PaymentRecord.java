@@ -12,6 +12,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 支付流水实体，映射 payment_record 表，保存支付渠道、交易结果和退款金额。
+ * 由支付服务通过 PaymentRecordMapper 读写，并以 paymentNo 和状态流转保证回调幂等。
+ */
 @Data
 @Builder
 @NoArgsConstructor

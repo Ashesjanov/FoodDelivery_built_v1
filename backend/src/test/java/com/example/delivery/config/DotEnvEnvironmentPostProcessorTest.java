@@ -10,6 +10,10 @@ import org.springframework.core.env.StandardEnvironment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 验证 .env 查找、简单 shell 风格解析和低优先级属性合并规则。
+ * 测试只调用 DotEnvEnvironmentPostProcessor 的包内工具方法，不启动完整 Spring 上下文。
+ */
 class DotEnvEnvironmentPostProcessorTest {
 
     @Test

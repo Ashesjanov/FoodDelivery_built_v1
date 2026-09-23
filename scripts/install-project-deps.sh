@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 解析 Maven/npm 依赖并验证后端和前端构建。
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,6 +47,7 @@ run_npm() {
 mkdir -p "${MAVEN_REPO_LOCAL}" "${NPM_CACHE_DIR}"
 export npm_config_cache="${NPM_CACHE_DIR}"
 
+# 先解析后端依赖图，便于在构建前报告缺失构件。
 info "Resolving backend Maven dependencies."
 (
   cd "${PROJECT_ROOT}/backend"
@@ -59,6 +61,7 @@ info "Resolving backend Maven dependencies."
   ) || die "Maven dependency resolution failed or exceeded ${DEPENDENCY_TIMEOUT}s."
 }
 
+# 有锁文件时使用 npm ci，保证安装结果可复现。
 info "Installing frontend npm dependencies."
 (
   cd "${PROJECT_ROOT}/frontend"

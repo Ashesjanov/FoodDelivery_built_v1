@@ -26,6 +26,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * {@link UserAddressService} 所有权、地址数量上限和默认地址流转的单元测试。
+ * 通过模拟 Mapper 断言数据库调用顺序和落库状态，不依赖事务基础设施。
+ */
 @ExtendWith(MockitoExtension.class)
 class UserAddressServiceTest {
     @Mock

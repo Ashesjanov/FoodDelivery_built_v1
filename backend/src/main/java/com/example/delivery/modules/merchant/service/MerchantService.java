@@ -22,6 +22,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 提供商家发现查询和商家分类、归属管理。
+ * 依赖商家、分类和关联关系 Mapper；目录及关联写操作使用事务，
+ * 商家写入由 {@link #requireOwnedMerchant(Long)} 鉴权，分类维护仅限管理员。
+ */
 @Service
 public class MerchantService {
     private final MerchantMapper merchantMapper;
@@ -65,6 +70,7 @@ public class MerchantService {
         Merchant merchant = new Merchant();
         merchant.setOwnerId(SecurityUtils.requireCurrentUserId());
         merchant.setName(request.name());
+        // 新商家初始为 PREPARING，后续仅所有者或管理员可切换营业状态。
         merchant.setBusinessStatus(MerchantBusinessStatus.PREPARING);
         merchant.setRating(BigDecimal.ZERO);
         merchant.setMonthlySales(0);
@@ -159,6 +165,7 @@ public class MerchantService {
 
     public Merchant requireOwnedMerchant(Long id) {
         Merchant merchant = requireMerchant(id);
+        // 这是菜品和分类关系写操作共用的所有权、管理员鉴权入口。
         if (!SecurityUtils.hasRole("ADMIN") && !Objects.equals(merchant.getOwnerId(), SecurityUtils.requireCurrentUserId())) {
             throw new BizException(ErrorCode.ACCESS_DENIED);
         }
@@ -188,6 +195,7 @@ public class MerchantService {
     }
 
     private void replaceCategories(Long merchantId, List<Long> categoryIds) {
+        // 在同一事务中整体替换关联，避免详情接口返回不完整的分类列表。
         categoryRelMapper.delete(new LambdaQueryWrapper<MerchantCategoryRel>().eq(MerchantCategoryRel::getMerchantId, merchantId));
         if (categoryIds == null) return;
         int sort = 0;

@@ -12,6 +12,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 购物车条目实体，映射 cart_item 表，保存用户待结算的菜品和规格快照。
+ * 由购物车服务通过 CartItemMapper 读写；数量、单价和所属商户必须在结算时再次校验。
+ */
 @Data
 @Builder
 @NoArgsConstructor

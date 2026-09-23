@@ -7,6 +7,10 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
+/**
+ * 评价模块的请求和响应模型：包含订单评价、商家回复和公开评价视图。
+ * 仅承担 Bean Validation 和传输职责，不包含唯一性或授权规则，也不涉及事务边界。
+ */
 public final class ReviewDto {
     private ReviewDto() {
     }

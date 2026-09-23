@@ -18,6 +18,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 认证 REST 控制器，统一入口为 {@code /api/auth}。
+ * 提供注册、登录和当前用户查询；请求先经 Bean Validation 校验，
+ * 注册和登录允许匿名访问，{@code /me} 从 JWT 当前用户解析身份。
+ */
 @Tag(name = "Authentication")
 @RestController
 @RequestMapping("/api/auth")

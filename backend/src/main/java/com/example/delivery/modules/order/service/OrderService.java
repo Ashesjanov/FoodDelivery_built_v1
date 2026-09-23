@@ -46,7 +46,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-/** Order creation, lifecycle transitions and cancellation compensation. */
+/**
+ * 订单核心服务：负责购物车创建订单、价格计算、订单状态机、查询授权和取消补偿。
+ * 依赖订单/明细/购物车/菜品 Mapper、优惠券服务和 {@link OrderPushService}；写方法均在事务内，
+ * 调用方必须已登录，客户、商家和骑手只能访问各自授权范围内的订单。
+ */
 @Service
 public class OrderService {
     private static final BigDecimal ZERO = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
@@ -103,6 +107,7 @@ public class OrderService {
             throw new BizException(ErrorCode.ADDRESS_NOT_FOUND);
         }
 
+        // 订单明细保存下单时的商品名称和价格快照，后续菜品改价不影响既有订单。
         List<OrderItem> orderItems = new ArrayList<>();
         Map<Long, Integer> stockDemand = new HashMap<>();
         BigDecimal totalAmount = ZERO;
@@ -134,6 +139,7 @@ public class OrderService {
             throw new BizException(ErrorCode.CONFLICT, "minimum order amount is not reached");
         }
 
+        // 金额统一保留两位；优惠不能超过商品金额，最终应付金额不得为负。
         BigDecimal discountAmount = request.couponClaimId() == null ? ZERO
                 : nvl(couponService.calculateDiscount(userId, request.couponClaimId(), totalAmount));
         if (discountAmount.compareTo(totalAmount) > 0) {
@@ -158,11 +164,13 @@ public class OrderService {
             item.setOrderId(order.getId());
             orderItemMapper.insert(item);
         }
+        // 扣库存、核销优惠券和锁定购物车与订单创建同事务执行，任一步失败都会整体回滚。
         reserveStock(stockDemand);
         if (request.couponClaimId() != null) {
             couponService.consumeClaim(request.couponClaimId(), order.getId());
         }
         markCartCheckedOut(cartItems);
+        // 经由 /topic/orders/{orderId} 在事务提交后通知订阅端，避免客户端看到被回滚的创建事件。
         orderPushService.publishAfterCommit(order.getId(), order.getStatus().getCode(), "order created, waiting for payment");
         return detail(order.getId(), order, orderItems);
     }
@@ -244,7 +252,7 @@ public class OrderService {
         return detail(id, updated, orderItems(id));
     }
 
-    /** PICKED_UP is the shared enum's representation of the DELIVERING phase. */
+    /** PICKED_UP 是共享订单状态枚举中对“配送中（DELIVERING）”阶段的表示。 */
     @Transactional
     public OrderDto.Detail pickup(Long id) {
         Orders order = requireDeliveryActor(id);
@@ -309,6 +317,7 @@ public class OrderService {
             throw new BizException(ErrorCode.CONFLICT, "order changed concurrently");
         }
 
+        // 取消补偿：恢复库存和优惠券；已支付记录全额退款，待支付记录关闭。
         releaseStock(orderItems(order.getId()));
         couponService.restoreClaim(order.getCouponClaimId());
         settlePaymentOnCancellation(order.getId(), reason);
@@ -319,6 +328,7 @@ public class OrderService {
 
     private Orders transition(Orders loaded, List<OrderStatus> expected, List<OrderStatus> idempotent,
                               OrderStatus target, String timestampField) {
+        // 重复推进到后续状态时按幂等成功返回；其他情况用期望状态作为条件更新，防止并发越级。
         if (idempotent.contains(loaded.getStatus())) {
             return loaded;
         }
@@ -338,6 +348,7 @@ public class OrderService {
     }
 
     private void reserveStock(Map<Long, Integer> demand) {
+        // 条件更新同时检查上架状态和剩余库存，零行更新表示竞争失败并触发回滚。
         for (Map.Entry<Long, Integer> entry : demand.entrySet()) {
             int quantity = entry.getValue();
             int updated = dishMapper.update(null, new LambdaUpdateWrapper<Dish>().eq(Dish::getId, entry.getKey())
@@ -358,6 +369,7 @@ public class OrderService {
     }
 
     private void settlePaymentOnCancellation(Long orderId, String reason) {
+        // 模拟支付的退款恢复：成功记录标记为全额退款，未完成记录关闭并记录取消原因。
         List<PaymentRecord> payments = paymentRecordMapper.selectList(new LambdaQueryWrapper<PaymentRecord>()
                 .eq(PaymentRecord::getOrderId, orderId).orderByDesc(PaymentRecord::getCreatedAt));
         for (PaymentRecord payment : payments) {

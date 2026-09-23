@@ -18,7 +18,10 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** Structured timing and audit logging for REST controllers. */
+/**
+ * 为所有 REST 控制器补充请求耗时、调用者、入参摘要和关联请求号的审计日志。
+ * 通过 Spring AOP 在 controller 调用链外层执行；日志不包含完整敏感值，也不改变返回结果。
+ */
 @Aspect
 @Component
 public class RequestLogAspect {
@@ -29,6 +32,7 @@ public class RequestLogAspect {
         long start = System.nanoTime();
         HttpServletRequest request = currentRequest();
         String requestId = requestId(request);
+        // 同一处理线程的日志都携带请求号，便于把访问日志与业务日志关联起来。
         MDC.put("requestId", requestId);
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String method = signature.getDeclaringType().getSimpleName() + "." + signature.getName();
@@ -67,6 +71,7 @@ public class RequestLogAspect {
             return "null";
         }
         String text = value.toString();
+        // 同时覆盖表单式和 JSON 式常见敏感字段，避免密码或令牌进入集中日志。
         return text.replaceAll("(?i)(password|token|secret)=([^,\\s}]+)", "$1=***")
                 .replaceAll("(?i)(\"(?:password|token|secret)\"\\s*:\\s*\")[^\"]*(\")", "$1***$2");
     }

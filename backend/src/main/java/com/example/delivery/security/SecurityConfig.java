@@ -19,7 +19,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-/** Stateless JWT security policy and JSON authentication errors. */
+/**
+ * 定义无状态 JWT 安全策略、角色路由规则和 JSON 认证/授权错误响应。
+ * 所有请求先经过 {@link JwtAuthenticationFilter}；controller 还可配合 @PreAuthorize 做细粒度检查。
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -36,6 +39,7 @@ public class SecurityConfig {
                                                    ObjectMapper objectMapper) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                // API 只依赖 Bearer 令牌，不创建服务端会话。
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(errors -> errors
                         .authenticationEntryPoint((request, response, exception) -> writeError(response, objectMapper,
@@ -47,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // 路径前缀给出粗粒度角色边界，资源归属仍由业务层二次校验。
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/merchant/**").hasAnyRole("MERCHANT", "ADMIN")
                         .requestMatchers("/api/rider/**").hasAnyRole("RIDER", "ADMIN")

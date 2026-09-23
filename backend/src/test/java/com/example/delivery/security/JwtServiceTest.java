@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * 验证 JWT 身份往返、签名隔离、异常令牌拒绝和密钥/有效期配置约束。
+ * 直接构造 JwtService，避免将数据库和 Spring Security 与令牌算法测试耦合。
+ */
 class JwtServiceTest {
     private static final String SECRET = "test-only-secret-with-at-least-256-bits-of-material";
 

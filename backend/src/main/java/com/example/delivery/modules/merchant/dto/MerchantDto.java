@@ -11,6 +11,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 商家和商家分类的请求、响应 DTO 集合，供公开查询和所有者、管理员管理使用。
+ * 资料、坐标和费用字段由 Bean Validation 在 REST 边界校验，
+ * 响应记录展示营业状态和已持久化的费用。
+ */
 public final class MerchantDto {
     private MerchantDto() {
     }

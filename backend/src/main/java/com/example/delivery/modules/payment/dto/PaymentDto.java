@@ -8,6 +8,10 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 支付模块的请求和响应模型：包含模拟支付参数、退款原因和支付记录视图。
+ * 仅承担字段约束与传输职责，不含状态判断，也不涉及事务或权限边界。
+ */
 public final class PaymentDto {
     private PaymentDto() {
     }

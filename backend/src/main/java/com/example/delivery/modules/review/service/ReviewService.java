@@ -24,7 +24,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-/** Customer reviews, merchant replies, and merchant rating maintenance. */
+/**
+ * 评价服务：处理已送达订单的评价、商家回复以及商家评分重算。
+ * 依赖评价/订单/商家 Mapper；创建和回复在事务内并校验客户或商家所有者身份，
+ * 公开查询只返回可见评价，一单一条评价的规则在创建时检查。
+ */
 @Service
 public class ReviewService {
     private static final int MAX_PAGE_SIZE = 200;
@@ -52,6 +56,7 @@ public class ReviewService {
         if (order.getStatus() != OrderStatus.DELIVERED && order.getStatus() != OrderStatus.COMPLETED) {
             throw new BizException(ErrorCode.CONFLICT, "an order can be reviewed only after delivery");
         }
+        // 一单最多一条评价：先返回友好冲突，数据库 order_id 唯一约束兜底并发插入。
         Long existing = reviewMapper.selectCount(new LambdaQueryWrapper<Review>().eq(Review::getOrderId, order.getId()));
         if (existing != null && existing > 0) {
             throw new BizException(ErrorCode.CONFLICT, "this order has already been reviewed");
@@ -121,6 +126,7 @@ public class ReviewService {
     }
 
     private void updateMerchantRating(Merchant merchant, LocalDateTime now) {
+        // 评分只基于可见评价在事务内重算，新增评价会同步刷新商家聚合评分。
         List<Review> reviews = reviewMapper.selectList(new LambdaQueryWrapper<Review>()
                 .eq(Review::getMerchantId, merchant.getId())
                 .eq(Review::getStatus, ReviewStatus.VISIBLE));

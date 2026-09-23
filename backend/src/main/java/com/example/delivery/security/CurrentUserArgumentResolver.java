@@ -9,7 +9,10 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-/** Supports {@code @CurrentUser UserPrincipal}, {@code Long userId}, and {@code String username}. */
+/**
+ * 将 {@code @CurrentUser} 标注的 controller 参数解析为当前认证主体、用户 ID 或用户名。
+ * 由 {@link CurrentUserWebConfig} 注册，身份来源是 {@link SecurityUtils} 中的安全上下文。
+ */
 @Component
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -23,6 +26,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
                                   NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         UserPrincipal principal = SecurityUtils.currentUser();
         if (principal == null) {
+            // 使用业务异常可复用全局处理器的稳定 401 响应格式。
             throw new BizException(ErrorCode.UNAUTHORIZED);
         }
         Class<?> type = parameter.getParameterType();

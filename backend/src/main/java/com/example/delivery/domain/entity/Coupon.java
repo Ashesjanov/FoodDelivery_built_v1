@@ -12,6 +12,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 优惠活动定义实体，映射 coupon 表，记录门槛、优惠算法、库存和领取限制。
+ * 由优惠服务通过 CouponMapper 管理；领取计数和活动状态必须在事务中同步更新。
+ */
 @Data
 @Builder
 @NoArgsConstructor

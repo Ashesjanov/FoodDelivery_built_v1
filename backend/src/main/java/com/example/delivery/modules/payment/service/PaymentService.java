@@ -23,7 +23,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Deterministic mock payment used before a real payment gateway is integrated. */
+/**
+ * 模拟支付服务：在接入真实支付网关前完成支付落库、订单确认和支付查询。
+ * 依赖支付/订单 Mapper 和 {@link OrderService}；支付写入与订单置为已支付共享事务，
+ * 支付仅允许订单所有者发起，查询允许订单所有者或管理员访问。
+ */
 @Service
 public class PaymentService {
     private final PaymentRecordMapper paymentRecordMapper;
@@ -39,6 +43,7 @@ public class PaymentService {
     @Transactional
     public PaymentDto.View mock(PaymentDto.MockRequest request) {
         Orders order = requirePayableOrder(request.orderId());
+        // 待支付阶段的重试幂等：优先复用既有成功记录，不再重复创建支付记录。
         PaymentRecord existing = successfulPayment(order.getId());
         if (existing != null) {
             if (order.getStatus() == com.example.delivery.domain.enums.OrderStatus.PENDING_PAYMENT) {
@@ -51,6 +56,7 @@ public class PaymentService {
         String transactionNo = request.transactionNo() == null || request.transactionNo().isBlank()
                 ? "MOCK-" + UUID.randomUUID().toString().replace("-", "").toUpperCase(Locale.ROOT)
                 : request.transactionNo().trim();
+        // 模拟网关直接记录成功支付，并在同一事务内把订单从待支付推进到已支付。
         PaymentRecord payment = PaymentRecord.builder().paymentNo(newPaymentNo()).orderId(order.getId())
                 .userId(order.getUserId()).amount(nvl(order.getPayableAmount())).paymentMethod(request.paymentMethod())
                 .status(PaymentStatus.SUCCESS).transactionNo(transactionNo).refundedAmount(BigDecimal.ZERO.setScale(2))
@@ -91,6 +97,7 @@ public class PaymentService {
     }
 
     private PaymentRecord successfulPayment(Long orderId) {
+        // 同一订单只认可最近一条成功支付，供重复请求和并发恢复时识别既有结果。
         return paymentRecordMapper.selectList(new LambdaQueryWrapper<PaymentRecord>()
                         .eq(PaymentRecord::getOrderId, orderId).eq(PaymentRecord::getStatus, PaymentStatus.SUCCESS)
                         .orderByDesc(PaymentRecord::getCreatedAt).last("LIMIT 1")).stream().findFirst().orElse(null);

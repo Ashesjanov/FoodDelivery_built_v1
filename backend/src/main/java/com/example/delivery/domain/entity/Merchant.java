@@ -11,6 +11,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 商户门店实体，映射 merchant 表，保存归属、地址、营业状态和履约费用。
+ * 由商户、订单和配送服务通过 MerchantMapper 使用；费用与坐标变化需保证精度和取值范围。
+ */
 @Data
 @Builder
 @NoArgsConstructor

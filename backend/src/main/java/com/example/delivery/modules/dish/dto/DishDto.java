@@ -12,6 +12,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 菜品和规格的请求、响应 DTO 集合，供商家目录管理和顾客目录查询使用。
+ * 名称、价格、库存等由 Bean Validation 在 REST 边界校验，
+ * 响应映射只暴露定价、库存和生命周期状态等安全字段。
+ */
 public final class DishDto {
     private DishDto() {
     }

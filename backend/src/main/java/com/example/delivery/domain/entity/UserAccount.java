@@ -11,6 +11,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 用户账号实体，映射 user_account 表，保存登录凭据、资料、角色和账号状态。
+ * 由认证、用户服务和 JWT 过滤器通过 UserAccountMapper 使用；密码哈希不得对外返回，仅 ACTIVE 账号可认证。
+ */
 @Data
 @Builder
 @NoArgsConstructor

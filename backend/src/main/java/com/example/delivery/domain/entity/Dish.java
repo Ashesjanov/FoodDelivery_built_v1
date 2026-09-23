@@ -11,6 +11,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 商户菜品实体，映射 dish 表，保存菜单展示、价格、库存和销售信息。
+ * 由菜品、购物车和订单服务通过 DishMapper 使用；下单必须校验状态、库存和当前价格。
+ */
 @Data
 @Builder
 @NoArgsConstructor

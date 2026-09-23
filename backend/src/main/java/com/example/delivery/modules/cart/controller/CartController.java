@@ -6,6 +6,11 @@ import com.example.delivery.modules.cart.service.CartService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 购物车 REST 控制器，统一入口为 {@code /api/cart}。
+ * 负责把已校验的增删改查和选中操作交给 {@link CartService}，
+ * 商家归属、商品状态、库存和价格规则由服务层统一校验。
+ */
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {

@@ -5,7 +5,10 @@ import com.example.delivery.common.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-/** Static access to the identity established by {@link JwtAuthenticationFilter}. */
+/**
+ * 提供 service 和 controller 读取当前认证身份的静态入口，避免各处直接操作 SecurityContext。
+ * 身份由 {@link JwtAuthenticationFilter} 写入；需要强制登录的方法可使用 requireCurrentUserId。
+ */
 public final class SecurityUtils {
 
     private SecurityUtils() {

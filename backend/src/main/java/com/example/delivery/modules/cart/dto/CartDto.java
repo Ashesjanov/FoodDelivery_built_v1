@@ -8,6 +8,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 购物车请求和响应 DTO 集合，覆盖加购、更新、全选和查询。
+ * 数量、备注等字段由 Bean Validation 在 REST 边界校验，
+ * 响应记录包含计算后的成交单价和条目小计。
+ */
 public final class CartDto {
     private CartDto() {
     }

@@ -19,7 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-/** Registration and credential authentication. */
+/**
+ * 负责账号注册、凭据认证和当前用户查询。
+ * 依赖 {@link UserAccountMapper}、{@link PasswordEncoder} 和 {@link JwtService}；
+ * 注册使用事务，登录和当前用户查询为只读事务，用户名并发冲突统一转换为业务异常。
+ */
 @Service
 public class AuthService {
     private final UserAccountMapper userAccountMapper;
@@ -41,6 +45,7 @@ public class AuthService {
 
         LocalDateTime now = LocalDateTime.now();
         UserAccount user = new UserAccount();
+        // 自助注册默认创建启用状态的普通用户，特权角色只能由管理员后续授予。
         user.setUsername(username);
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setPhone(normalize(request.phone()));
@@ -60,6 +65,7 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         UserAccount user = findByUsername(request.username().trim());
+        // 对外统一返回无效凭据，避免泄露用户名是否存在或密码是否错误。
         if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new BizException(ErrorCode.INVALID_CREDENTIALS);
         }

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 安装 Manjaro/Arch 开发包并启动本地基础设施。
 set -Eeuo pipefail
 IFS=$'\n\t'
 
@@ -151,6 +152,7 @@ else
   die "Docker Compose is unavailable after installation."
 fi
 
+# 先显式拉取镜像，让仓库失败比隐式创建容器时更清晰。
 info "Pulling MySQL 8, Redis 7, and MinIO images."
 if ! "${compose_command[@]}" --project-directory "${PROJECT_ROOT}" pull; then
   warn "Upstream image pull failed. Switching to the DaoCloud registry mirror and retrying."

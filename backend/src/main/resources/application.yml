@@ -1,3 +1,4 @@
+# 外卖后端运行配置；密钥和主机覆盖项从 `.env` 读取。
 server:
   port: ${SERVER_PORT:8080}
 

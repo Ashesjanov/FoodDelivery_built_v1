@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 订单 REST 控制器：提供 /api/orders 下的创建、查询、取消和履约状态推进入口。
+ * 仅依赖 {@link OrderService}，请求参数由 Bean Validation 校验；控制器不管理事务，
+ * 写操作的事务边界以及客户、商家、骑手的数据归属检查均由服务层执行。
+ */
 @RestController
 @RequestMapping("/api/orders")
 @PreAuthorize("isAuthenticated()")

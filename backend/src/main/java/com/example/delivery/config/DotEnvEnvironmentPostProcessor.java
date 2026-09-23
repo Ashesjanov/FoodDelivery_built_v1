@@ -14,7 +14,10 @@ import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
-/** Loads the repository-local `.env` file for IDE, Maven and packaged launches. */
+/**
+ * 在 Spring 创建配置 Bean 前查找并加载仓库根目录附近的 .env，统一 IDEA、Maven 和部署启动行为。
+ * 类由 META-INF/spring.factories 注册；进程环境变量、JVM 参数等已有配置拥有更高优先级。
+ */
 public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
     private static final String PROPERTY_SOURCE_NAME = "deliveryDotEnv";
@@ -27,6 +30,7 @@ public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor,
         }
 
         Map<String, Object> values = loadValues(envFile);
+        // .env 只作为低优先级兜底，不能覆盖显式传入的环境变量或命令行参数。
         values.keySet().removeIf(environment::containsProperty);
         if (!values.isEmpty()) {
             environment.getPropertySources().addLast(new MapPropertySource(PROPERTY_SOURCE_NAME, values));
@@ -59,6 +63,7 @@ public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor,
                 if (trimmed.isEmpty() || trimmed.startsWith("#")) {
                     continue;
                 }
+                // 兼容 shell 风格的 export KEY=value，但不执行变量展开或任意 shell 语法。
                 if (trimmed.startsWith("export ")) {
                     trimmed = trimmed.substring("export ".length()).trim();
                 }

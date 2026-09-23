@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 商家 REST 控制器，统一入口为 {@code /api/merchants}。
+ * 包含公开查询、商家所有者管理、营业状态维护和管理员分类管理；
+ * 请求经 Bean Validation 校验后，由 {@link MerchantService} 执行所有权或管理员鉴权。
+ */
 @RestController
 @RequestMapping("/api/merchants")
 public class MerchantController {

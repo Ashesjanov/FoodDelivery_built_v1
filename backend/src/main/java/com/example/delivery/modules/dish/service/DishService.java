@@ -19,6 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 维护商家菜品目录和规格价格。
+ * 依赖菜品、规格 Mapper 和 {@link MerchantService}；写操作使用事务，
+ * 修改库存、价格、生命周期状态或规格前必须通过管理员或商家所有者校验。
+ */
 @Service
 public class DishService {
     private final DishMapper dishMapper;
@@ -56,7 +61,9 @@ public class DishService {
         merchantService.requireOwnedMerchant(merchantId);
         Dish dish = new Dish();
         dish.setMerchantId(merchantId); dish.setName(request.name()); dish.setPrice(request.price());
+        // 原价仅用于展示，当前价才是购物车和订单金额的计算基准。
         dish.setOriginalPrice(request.originalPrice() == null ? request.price() : request.originalPrice());
+        // 库存表示目录可售量，购物车和订单提交前仍需再次校验。
         dish.setStock(request.stock()); dish.setSales(0); dish.setStatus(DishStatus.ON_SALE);
         apply(dish, request); dishMapper.insert(dish); return DishDto.DishView.from(dish);
     }

@@ -9,6 +9,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 商户分类字典实体，映射 merchant_category 表，保存前台分类名称、图标和排序。
+ * 由商户服务通过 MerchantCategoryMapper 维护；停用分类不应继续参与前台筛选。
+ */
 @Data
 @Builder
 @NoArgsConstructor

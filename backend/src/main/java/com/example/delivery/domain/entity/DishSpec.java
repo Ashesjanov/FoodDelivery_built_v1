@@ -10,6 +10,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 菜品规格实体，映射 dish_spec 表，保存规格组、选项名称和相对加价。
+ * 由菜品、购物车和订单服务通过 DishSpecMapper 使用；历史订单应保存规格名称快照。
+ */
 @Data
 @Builder
 @NoArgsConstructor

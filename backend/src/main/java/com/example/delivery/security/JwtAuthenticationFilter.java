@@ -18,7 +18,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/** Authenticates requests from a valid bearer token and confirms the account is still active. */
+/**
+ * 每个请求执行一次的 JWT 认证过滤器，从 Authorization Bearer 令牌建立安全上下文。
+ * 位于 Spring Security 用户名密码过滤器之前；令牌有效后还会核对数据库中的账号状态和用户名。
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
@@ -42,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
+            // 先验签并恢复身份，再查库防止已删除、停用或改名账号继续使用旧令牌。
             UserPrincipal tokenPrincipal = jwtService.parseToken(authorization.substring(BEARER_PREFIX.length()).trim());
             UserAccount user = userAccountMapper.selectById(tokenPrincipal.userId());
             if (user != null && UserStatus.ACTIVE.equals(user.getStatus()) && user.getUsername().equals(tokenPrincipal.username())) {
@@ -52,6 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (JwtException | IllegalArgumentException ex) {
+            // 无效令牌本身不产生 401 响应；未命中保护规则时保持匿名，由授权规则决定是否拒绝。
             SecurityContextHolder.clearContext();
             log.debug("Rejected invalid bearer token", ex);
         }

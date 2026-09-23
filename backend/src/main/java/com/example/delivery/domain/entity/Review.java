@@ -10,6 +10,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 订单评价实体，映射 review 表，保存用户评分、内容、图片和商户回复。
+ * 由评价服务通过 ReviewMapper 维护；一单一次评价和展示状态由服务层共同约束。
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -11,6 +11,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 订单主实体，映射 orders 表，保存订单状态、金额构成和收货地址快照。
+ * 由订单、支付和配送服务通过 OrdersMapper 或 OrderMapper 使用，跨表状态与金额必须事务一致。
+ */
 @Data
 @Builder
 @NoArgsConstructor

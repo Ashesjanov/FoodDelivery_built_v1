@@ -18,6 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 配送 REST 控制器：提供 /api/delivery 下的骑手资料、位置、状态和接单履约入口。
+ * 仅依赖 {@link DeliveryService}；类级限制 RIDER 角色，控制器不管理事务，
+ * 并发接单、状态推进和骑手数据隔离均在服务层处理。
+ */
 @Tag(name = "Delivery")
 @RestController
 @RequestMapping("/api/delivery")

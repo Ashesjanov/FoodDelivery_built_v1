@@ -2,7 +2,11 @@ package com.example.delivery.common;
 
 import org.springframework.http.HttpStatus;
 
-/** Error identifiers and their default HTTP status mappings. */
+/**
+ * 定义前后端共享的业务错误码、默认提示和默认 HTTP 状态。
+ * service 用它抛出 {@link BizException}，全局异常处理和安全错误用它保持响应格式一致。
+ * 错误码一经发布不可复用，新增错误应追加枚举值。
+ */
 public enum ErrorCode {
     SUCCESS(0, "success", HttpStatus.OK),
     BAD_REQUEST(40000, "request is invalid", HttpStatus.BAD_REQUEST),

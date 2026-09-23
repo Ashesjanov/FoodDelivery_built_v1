@@ -6,6 +6,10 @@ import com.example.delivery.domain.enums.UserStatus;
 
 import java.time.LocalDateTime;
 
+/**
+ * 对外安全用户视图，供认证、个人资料和管理员接口复用；
+ * {@link #from(UserAccount)} 有意排除密码散列等敏感字段。
+ */
 public record UserResponse(
         Long id,
         String username,

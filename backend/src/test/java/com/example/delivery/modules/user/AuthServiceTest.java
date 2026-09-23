@@ -27,6 +27,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * {@link AuthService} 注册、登录和用户查询的单元测试。
+ * 通过模拟 Mapper、密码编码器和 JWT 协作组件，验证输入规范化、凭据结果、
+ * 账号状态和令牌签发，不依赖数据库或安全容器。
+ */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
     @Mock

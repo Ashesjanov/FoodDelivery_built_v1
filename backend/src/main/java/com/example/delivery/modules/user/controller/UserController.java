@@ -21,6 +21,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 用户 REST 控制器，统一入口为 {@code /api/users}。
+ * 同时提供个人资料、密码接口和仅管理员可用的账号管理接口；REST 边界完成
+ * Bean Validation，{@link UserService} 负责事务持久化、密码和归属校验。
+ */
 @Tag(name = "Users")
 @RestController
 @RequestMapping("/api/users")

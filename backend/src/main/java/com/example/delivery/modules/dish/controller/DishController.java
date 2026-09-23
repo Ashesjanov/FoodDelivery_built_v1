@@ -9,6 +9,11 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * 菜品 REST 控制器，统一入口为 {@code /api/dishes}。
+ * 同时提供顾客目录查询和商家菜品、规格管理；已校验的写请求交给
+ * {@link DishService}，由服务层检查商家归属和商品状态。
+ */
 @RestController
 @RequestMapping("/api/dishes")
 public class DishController {
