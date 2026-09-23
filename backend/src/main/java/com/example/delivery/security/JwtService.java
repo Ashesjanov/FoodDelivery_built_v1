@@ -70,7 +70,7 @@ public class JwtService {
 
     private static SecretKey buildKey(String secret) {
         if (secret == null || secret.isBlank()) {
-            throw new IllegalArgumentException("security.jwt.secret must be configured");
+            throw new IllegalArgumentException("security.jwt.secret must be configured in .env or JWT_SECRET");
         }
         byte[] secretBytes = decodeSecret(secret);
         if (secretBytes.length < 32) {

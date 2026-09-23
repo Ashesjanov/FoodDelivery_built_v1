@@ -48,6 +48,8 @@ exec newgrp docker
 
 后端位于 `backend`，使用 Spring Boot 3.4.1、Java 21 和 Maven；前端位于 `frontend`，使用 Vue 3、TypeScript、Vite、Element Plus、Pinia、Vue Router、Axios、ECharts 和高德地图 Loader。依赖安装脚本会显式使用 `.mvn/settings.xml`，并在镜像源失败时回退 Maven Central；随后分别执行后端打包和前端构建。
 
+后端启动时会自动查找项目根目录或父目录的 `.env`，因此 IDEA 直接运行 `DeliveryApplication` 不需要额外配置环境变量。命令行环境变量优先于 `.env`。
+
 管理基础服务：
 
 ```bash
