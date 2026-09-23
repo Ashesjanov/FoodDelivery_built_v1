@@ -1,0 +1,46 @@
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.kotlin
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Local environment and dependencies ###
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+target/
+.npm-cache/
+*.log
+frontend/src/auto-imports.d.ts
+frontend/src/components.d.ts
+
+### Local tool caches ###
+.m2/
+.npm/
