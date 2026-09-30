@@ -1,0 +1,44 @@
+.el-button {
+  min-height: 3rem;
+  border-radius: var(--radius-control);
+  font-weight: 500;
+  transition: transform var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
+}
+
+.el-button:hover {
+  transform: translateY(-1px);
+}
+
+.el-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.25);
+}
+
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner {
+  border-radius: var(--radius-control);
+  box-shadow: 0 0 0 1px var(--color-border) inset;
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--color-accent) inset, 0 0 0 3px rgba(249, 115, 22, 0.18);
+}
+
+.el-dialog,
+.el-drawer,
+.el-card {
+  border-radius: var(--radius-card);
+}
+
+.el-message,
+.el-notification {
+  border-radius: var(--radius-control);
+}
+
+.el-table {
+  border-radius: var(--radius-control);
+  overflow: hidden;
+}
