@@ -38,15 +38,13 @@ export function getToken(): string | null {
 }
 
 function redirectToLogin(): void {
-  if (
-    typeof window === 'undefined'
-    || redirectingToLogin
-    || window.location.pathname === '/login'
-    || window.location.pathname === '/register'
-  ) return
+  if (typeof window === 'undefined' || redirectingToLogin) return
+  const pathname = window.location.pathname
+  const mobile = pathname === '/m' || pathname.startsWith('/m/')
+  if (['/login', '/register', '/m/login', '/m/register'].includes(pathname)) return
   redirectingToLogin = true
-  const redirect = encodeURIComponent(`${window.location.pathname}${window.location.search}`)
-  window.location.assign(`/login?redirect=${redirect}`)
+  const redirect = encodeURIComponent(`${pathname}${window.location.search}`)
+  window.location.assign(`${mobile ? '/m/login' : '/login'}?redirect=${redirect}`)
 }
 
 export const api: AxiosInstance = axios.create({

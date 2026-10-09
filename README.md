@@ -11,11 +11,14 @@
 | 登录页 | `http://localhost:5173/login` |
 | 注册页 | `http://localhost:5173/register` |
 | 顾客首页 | `http://localhost:5173/home` |
+| 移动端首页 | `http://localhost:5173/m/home` |
 | 后端 API | `http://127.0.0.1:8080` |
 | Swagger UI | `http://127.0.0.1:8080/swagger-ui.html` |
 | 后端健康检查 | `http://127.0.0.1:8080/actuator/health` |
 
 生产预览时登录页为 `http://localhost:4173/login`。
+
+手机浏览器访问任意电脑端地址（如 `http://localhost:5173/home`）会自动跳转到内容一致的移动版（`/m/*`，底部 Tab 导航）；也可直接访问 `/m/home`，电脑浏览器同样可以打开 `/m/*` 预览移动版。移动端覆盖顾客点餐闭环、商家接单与菜单管理、骑手工作台与抢单；管理员后台保留电脑端。
 
 首次使用请在注册页创建账户。注册接口默认创建 `CUSTOMER` 账户；商家、骑手和管理员角色需要管理员在后台调整。数据库 seed 用户的密码哈希是占位值，不能直接作为登录凭据。
 

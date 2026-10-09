@@ -9,11 +9,11 @@ declare module 'vue-router' {
     public?: boolean
     guestOnly?: boolean
     roles?: UserRole[]
-    layout?: 'app' | 'auth'
+    layout?: 'app' | 'auth' | 'mobile'
   }
 }
 
-const routes: RouteRecordRaw[] = [
+const desktopRoutes: RouteRecordRaw[] = [
   { path: '/', name: 'landing', component: () => import('@/views/home/HomeView.vue'), meta: { title: '发现美食', public: true } },
   { path: '/home', name: 'home', component: () => import('@/views/home/HomeView.vue'), meta: { title: '发现美食', public: true } },
   { path: '/login', name: 'login', component: () => import('@/views/auth/LoginView.vue'), meta: { title: '登录', guestOnly: true, layout: 'auth' } },
@@ -46,7 +46,36 @@ const routes: RouteRecordRaw[] = [
   { path: '/admin/orders', name: 'admin-orders', component: () => import('@/views/admin/AdminOrdersView.vue'), meta: { title: '订单管理', roles: ['ADMIN'] } },
   { path: '/admin/coupons', name: 'admin-coupons', component: () => import('@/views/admin/AdminCouponsView.vue'), meta: { title: '优惠券管理', roles: ['ADMIN'] } },
   { path: '/admin/reviews', name: 'admin-reviews', component: () => import('@/views/admin/AdminReviewsView.vue'), meta: { title: '评价管理', roles: ['ADMIN'] } },
+]
 
+/** 移动端路由：与电脑端页面内容一一对应，覆盖顾客、商家和骑手核心流程。 */
+const mobileRoutes: RouteRecordRaw[] = [
+  { path: '/m', redirect: '/m/home' },
+  { path: '/m/login', name: 'm-login', component: () => import('@/views/mobile/MLoginView.vue'), meta: { title: '登录', guestOnly: true, layout: 'mobile' } },
+  { path: '/m/register', name: 'm-register', component: () => import('@/views/mobile/MRegisterView.vue'), meta: { title: '注册', guestOnly: true, layout: 'mobile' } },
+  { path: '/m/home', name: 'm-home', component: () => import('@/views/mobile/MHomeView.vue'), meta: { title: '发现美食', public: true, layout: 'mobile' } },
+  { path: '/m/merchants/:id', name: 'm-merchant-detail', component: () => import('@/views/mobile/MMerchantView.vue'), meta: { title: '商户详情', public: true, layout: 'mobile' } },
+  { path: '/m/cart', name: 'm-cart', component: () => import('@/views/mobile/MCartView.vue'), meta: { title: '购物车', roles: ['CUSTOMER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/checkout', name: 'm-checkout', component: () => import('@/views/mobile/MCheckoutView.vue'), meta: { title: '确认订单', roles: ['CUSTOMER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/orders', name: 'm-orders', component: () => import('@/views/mobile/MOrdersView.vue'), meta: { title: '我的订单', roles: ['CUSTOMER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/orders/:id', name: 'm-order-detail', component: () => import('@/views/mobile/MOrderDetailView.vue'), meta: { title: '订单详情', roles: ['CUSTOMER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/orders/:id/pay', name: 'm-order-pay', component: () => import('@/views/mobile/MPaymentView.vue'), meta: { title: '订单支付', roles: ['CUSTOMER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/orders/:id/review', name: 'm-order-review', component: () => import('@/views/mobile/MReviewView.vue'), meta: { title: '评价订单', roles: ['CUSTOMER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/addresses', name: 'm-addresses', component: () => import('@/views/mobile/MAddressesView.vue'), meta: { title: '收货地址', roles: ['CUSTOMER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/profile', name: 'm-profile', component: () => import('@/views/mobile/MProfileView.vue'), meta: { title: '个人资料', roles: ['CUSTOMER', 'ADMIN', 'MERCHANT', 'RIDER'], layout: 'mobile' } },
+
+  { path: '/m/merchant/orders', name: 'm-merchant-orders', component: () => import('@/views/mobile/MMerchantOrdersView.vue'), meta: { title: '商家订单', roles: ['MERCHANT', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/merchant/menu', name: 'm-merchant-menu', component: () => import('@/views/mobile/MMerchantMenuView.vue'), meta: { title: '菜单管理', roles: ['MERCHANT', 'ADMIN'], layout: 'mobile' } },
+
+  { path: '/m/rider', name: 'm-rider-dashboard', component: () => import('@/views/mobile/MRiderDashboardView.vue'), meta: { title: '骑手工作台', roles: ['RIDER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/rider/available', name: 'm-rider-available', component: () => import('@/views/mobile/MRiderAvailableView.vue'), meta: { title: '可接订单', roles: ['RIDER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/rider/orders/:id', name: 'm-rider-order', component: () => import('@/views/mobile/MRiderOrderView.vue'), meta: { title: '配送详情', roles: ['RIDER', 'ADMIN'], layout: 'mobile' } },
+  { path: '/m/rider/history', name: 'm-rider-history', component: () => import('@/views/mobile/MRiderHistoryView.vue'), meta: { title: '配送历史', roles: ['RIDER', 'ADMIN'], layout: 'mobile' } },
+]
+
+const routes: RouteRecordRaw[] = [
+  ...desktopRoutes,
+  ...mobileRoutes,
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/NotFoundView.vue'), meta: { title: '页面不存在', public: true } },
 ]
 
@@ -59,7 +88,29 @@ function roleFromToken(token: string): UserRole | null {
   }
 }
 
-function homeForRole(role: UserRole | null): string {
+function isMobilePath(path: string): boolean {
+  return path === '/m' || path.startsWith('/m/')
+}
+
+/** 手机浏览器访问电脑端地址时，映射到内容一致的移动端页面；无移动版的路径（如管理后台）落到移动首页。 */
+function isMobileUA(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /Android|iPhone|iPad|iPod|Mobile|HarmonyOS/i.test(navigator.userAgent)
+}
+
+function mobilePathFor(path: string): string {
+  const candidate = path === '/' ? '/m/home' : `/m${path}`
+  const resolved = router.resolve(candidate)
+  const missing = resolved.matched.some((record) => record.name === 'not-found')
+  return missing ? '/m/home' : candidate
+}
+
+function homeForRole(role: UserRole | null, mobile: boolean): string {
+  if (mobile) {
+    if (role === 'MERCHANT') return '/m/merchant/orders'
+    if (role === 'RIDER') return '/m/rider'
+    return '/m/home'
+  }
   if (role === 'MERCHANT') return '/merchant/orders'
   if (role === 'RIDER') return '/rider'
   if (role === 'ADMIN') return '/admin/orders'
@@ -73,22 +124,27 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  if (isMobileUA() && !isMobilePath(to.path)) {
+    return { path: mobilePathFor(to.path), query: to.query, replace: true }
+  }
+
   const token = getToken()
   const role = token ? roleFromToken(token) : null
+  const mobile = isMobilePath(to.path)
 
   if (to.meta.guestOnly) {
-    if (token && role) return homeForRole(role)
+    if (token && role) return homeForRole(role, mobile)
     return true
   }
   if (to.meta.public) return true
-  if (!token) return { path: '/login', query: { redirect: to.fullPath } }
+  if (!token) return { path: mobile ? '/m/login' : '/login', query: { redirect: to.fullPath } }
 
   const auth = useAuthStore()
   void auth.initialize()
   const effectiveRole = auth.role ?? role
   const allowedRoles = to.meta.roles
 
-  if (allowedRoles && (!effectiveRole || !allowedRoles.includes(effectiveRole))) return homeForRole(effectiveRole)
+  if (allowedRoles && (!effectiveRole || !allowedRoles.includes(effectiveRole))) return homeForRole(effectiveRole, mobile)
   return true
 })
 
