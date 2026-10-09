@@ -1,14 +1,16 @@
-/** 前端入口：安装共享插件并挂载应用外壳。 */
+/** 前端入口：安装共享插件并恢复本地登录会话。 */
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+import '@/styles/index.css'
 import App from './App.vue'
 import router from './router'
+import { useAuthStore } from '@/stores/auth'
 
-// 根组件渲染前先安装状态管理和路由。
-createApp(App)
-  .use(createPinia())
-  .use(router)
-  .use(ElementPlus)
-  .mount('#app')
+const pinia = createPinia()
+const app = createApp(App)
+
+app.use(pinia)
+app.use(router)
+
+void useAuthStore(pinia).initialize()
+app.mount('#app')

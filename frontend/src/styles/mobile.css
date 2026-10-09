@@ -1,0 +1,437 @@
+/* 移动端界面共享样式：与电脑端 Bento 风格保持同一套颜色、圆角与字体。 */
+
+.m-shell {
+  min-height: 100vh;
+  background: #f4f4ef;
+  color: #1d2722;
+  font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
+
+/* 顶栏：与电脑端顶部导航同色系，保持品牌一致。 */
+.m-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.m-brand {
+  border-radius: var(--radius-control);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.m-brand:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.m-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.m-cart-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: #3f3f46;
+  cursor: pointer;
+}
+
+.m-cart-link:hover,
+.m-cart-link:focus-visible {
+  background: #f4f4f5;
+  outline: none;
+}
+
+.m-cart-badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* 页面容器：单列卡片流，底部为 Tab 栏预留空间。 */
+.m-page {
+  min-height: calc(100vh - 140px);
+  padding: 16px 16px 96px;
+}
+
+.m-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.m-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e7e5df;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-bento);
+}
+
+.m-card--dark {
+  background: #1d2722;
+  border-color: #2a342e;
+  color: #f6f4ed;
+}
+
+.m-card--fresh {
+  background: #e9f5ec;
+  border-color: #cfe7d5;
+}
+
+.m-card--warm {
+  background: #fbeee4;
+  border-color: #f1dcc8;
+}
+
+.m-card--accent {
+  background: #fdeadb;
+  border-color: #f6d9be;
+}
+
+.m-card--gray {
+  background: #f4f4ef;
+  border-color: #e4e4de;
+}
+
+.m-title {
+  margin: 0;
+  font-family: Georgia, 'Songti SC', serif;
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.12;
+}
+
+.m-subtitle {
+  margin: 0;
+  font-family: Georgia, 'Songti SC', serif;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.m-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  letter-spacing: 0;
+  opacity: 0.72;
+}
+
+.m-muted {
+  margin: 0;
+  color: #74807a;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.m-lead {
+  margin: 12px 0 0;
+  color: #c7cec6;
+  line-height: 1.8;
+}
+
+.m-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.m-row--top {
+  align-items: flex-start;
+}
+
+.m-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.m-actions--end {
+  justify-content: flex-end;
+}
+
+.m-notice {
+  margin: 12px 0 0;
+  color: #9a5e23;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.m-notice--error {
+  color: #b64f41;
+}
+
+.m-card--dark .m-notice {
+  color: #f0c47b;
+}
+
+/* 分类 chips 与筛选，与电脑端胶囊样式一致。 */
+.m-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.m-chip {
+  border: 1px solid #c6d8c9;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 8px 14px;
+  color: #31583d;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.m-chip:hover,
+.m-chip:focus-visible,
+.m-chip.is-active {
+  background: #31583d;
+  color: #fff;
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.m-card--dark .m-chip {
+  border-color: #4b5a51;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d7ded8;
+}
+
+.m-card--dark .m-chip:hover,
+.m-card--dark .m-chip:focus-visible,
+.m-card--dark .m-chip.is-active {
+  background: #f6f4ed;
+  color: #1d2722;
+}
+
+/* 图片缩略图。 */
+.m-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.m-thumb--sm {
+  width: 88px;
+  aspect-ratio: 4 / 3;
+}
+
+/* 底部 Tab 导航。 */
+.m-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid var(--color-border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.m-tab {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 56px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: 0;
+  color: #71717a;
+  font-size: 11px;
+  text-decoration: none;
+  transition: color 0.2s ease-out;
+}
+
+.m-tab span {
+  margin-top: 4px;
+}
+
+.m-tab:hover,
+.m-tab:focus-visible {
+  color: #3f3f46;
+  outline: none;
+}
+
+.m-tab.is-active {
+  color: var(--color-accent-strong);
+}
+
+.m-tab-badge {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  margin-left: 6px;
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* 底部动作条：结算、支付等关键操作固定在拇指可达区域。 */
+.m-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 56px;
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid var(--color-border);
+}
+
+/* 底部弹层（规格、明细、确认操作）。 */
+.m-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(23, 28, 24, 0.55);
+}
+
+.m-sheet {
+  width: 100%;
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 24px 16px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: #fbfaf6;
+  box-shadow: 0 -24px 64px rgba(20, 28, 23, 0.25);
+}
+
+.m-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.m-sheet-title {
+  margin: 0;
+  font-family: Georgia, 'Songti SC', serif;
+  font-weight: 500;
+  font-size: 24px;
+}
+
+.m-sheet-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: #efeee9;
+  color: #34403a;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.m-sheet-close:hover,
+.m-sheet-close:focus-visible {
+  color: var(--color-accent-strong);
+  outline: 2px solid #e7a16d;
+}
+
+/* 表单列：移动端单列排布。 */
+.m-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 数量步进器：触摸目标不小于 44px。 */
+.m-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.m-stepper button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #d2d4cc;
+  border-radius: 50%;
+  background: #fff;
+  color: #1d2722;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.m-stepper button:hover,
+.m-stepper button:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.m-stepper button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.m-stepper strong {
+  min-width: 24px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 移动端聚焦输入框时避免 iOS 自动放大页面。 */
+.m-shell input,
+.m-shell select,
+.m-shell textarea {
+  font-size: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
