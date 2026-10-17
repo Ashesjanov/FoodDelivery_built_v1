@@ -2,7 +2,7 @@
 /** 移动端商家菜单管理：与电脑端内容一致，菜品与规格的 CRUD、上架、下架和售罄。 */
 import { onMounted, ref } from 'vue'
 import type { Dish, DishSpec, Merchant, MerchantCategory } from '@/types/domain'
-import { dishApi, merchantApi } from '@/api'
+import { dishApi, merchantApi, uploadApi } from '@/api'
 import { useAuthStore } from '@/stores/auth'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
@@ -11,7 +11,7 @@ import EmptyState from '@/components/base/EmptyState.vue'
 import ErrorState from '@/components/base/ErrorState.vue'
 import LoadingState from '@/components/base/LoadingState.vue'
 import StatusBadge from '@/components/base/StatusBadge.vue'
-import { callApi, currentUserId, errorMessage, money, pageRecords } from '@/components/features/ops/opsUtils'
+import { callApi, currentUserId, errorMessage, money, pageRecords, IMAGE_UPLOAD_ACCEPT, validateImageFile } from '@/components/features/ops/opsUtils'
 import '@/components/features/ops/opsStyles.css'
 
 type DishForm = { id: number | null; categoryId: number | null; name: string; description: string; imageUrl: string; price: string | number; originalPrice: string | number; stock: string | number; sortOrder: string | number }
@@ -31,6 +31,8 @@ const showDishForm = ref(false)
 const showSpecForm = ref(false)
 const dishForm = ref<DishForm>(emptyDish())
 const specForm = ref<SpecForm>(emptySpec())
+const fileInput = ref<HTMLInputElement | null>(null)
+const uploading = ref(false)
 
 function emptyDish(): DishForm {
   return { id: null, categoryId: null, name: '', description: '', imageUrl: '', price: '', originalPrice: '', stock: 0, sortOrder: 0 }
@@ -76,6 +78,42 @@ function openDish(item?: Dish) {
     ? { id: item.id, categoryId: item.categoryId, name: item.name, description: item.description ?? '', imageUrl: item.imageUrl ?? '', price: item.price, originalPrice: item.originalPrice ?? '', stock: item.stock, sortOrder: item.sortOrder }
     : emptyDish()
   showDishForm.value = true
+}
+
+/** 打开系统文件选择框；上传期间禁止重复触发。 */
+function pickImage() {
+  if (uploading.value) return
+  fileInput.value?.click()
+}
+
+/** 选择图片后立即上传到对象存储，并把返回地址写回表单，随菜品一起保存。 */
+async function uploadImage(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  // 先清空，保证再次选择同一个文件也会触发 change。
+  input.value = ''
+  if (!file || uploading.value) return
+  const invalid = validateImageFile(file)
+  if (invalid) {
+    // 统一加前缀，页面按“失败”关键字显示为错误色。
+    notice.value = `图片上传失败：${invalid}`
+    return
+  }
+  uploading.value = true
+  notice.value = ''
+  try {
+    const uploaded = await uploadApi.image(file, 'dish')
+    dishForm.value.imageUrl = uploaded.url
+    notice.value = '图片已上传，保存菜品后生效'
+  } catch (cause) {
+    notice.value = `图片上传失败：${errorMessage(cause)}`
+  } finally {
+    uploading.value = false
+  }
+}
+
+function clearImage() {
+  dishForm.value.imageUrl = ''
 }
 
 async function saveDish() {
@@ -287,10 +325,20 @@ onMounted(load)
           <BaseInput v-model="dishForm.originalPrice" label="原价（选填）" type="number" :min="0" :step="0.01" />
           <BaseInput v-model="dishForm.stock" label="库存" type="number" :min="0" :step="1" required />
           <BaseInput v-model="dishForm.sortOrder" label="排序" type="number" :min="0" :step="1" />
-          <BaseInput v-model="dishForm.imageUrl" label="图片地址（选填）" type="url" placeholder="https://" />
+          <div class="ops-upload">
+            <span class="ops-muted">菜品图片（选填）</span>
+            <div class="ops-upload-row">
+              <img v-if="dishForm.imageUrl" class="ops-upload-preview" :src="dishForm.imageUrl" alt="菜品图片预览">
+              <div v-else class="ops-upload-placeholder">暂无图片</div>
+              <BaseButton size="sm" variant="outline" :loading="uploading" :disabled="uploading" @click="pickImage">上传图片</BaseButton>
+              <BaseButton v-if="dishForm.imageUrl" size="sm" variant="ghost" :disabled="uploading" @click="clearImage">移除图片</BaseButton>
+              <input ref="fileInput" class="ops-upload-input" type="file" :accept="IMAGE_UPLOAD_ACCEPT" aria-label="选择菜品图片" @change="uploadImage">
+            </div>
+            <BaseInput v-model="dishForm.imageUrl" label="图片地址" type="url" placeholder="上传后自动填入，也可手动填写 https://" />
+          </div>
           <BaseInput v-model="dishForm.description" label="菜品描述（选填）" placeholder="配料、口味或份量说明" />
           <div class="m-actions">
-            <BaseButton native-type="submit" :loading="saving === 'dish'">保存菜品</BaseButton>
+            <BaseButton native-type="submit" :loading="saving === 'dish'" :disabled="uploading">保存菜品</BaseButton>
             <BaseButton variant="ghost" @click="showDishForm = false">取消</BaseButton>
           </div>
         </form>

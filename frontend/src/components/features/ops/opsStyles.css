@@ -35,6 +35,11 @@
 .ops-kpi strong { display: block; margin-top: 4px; font-size: 22px; font-variant-numeric: tabular-nums; }
 .ops-form { display: grid; gap: 16px; margin-top: 16px; }
 .ops-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ops-upload { display: grid; gap: 16px; padding: 12px; border: 1px solid #d8ddd9; border-radius: var(--radius-control); background: #f7f8f6; }
+.ops-upload-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.ops-upload-input { position: absolute; width: 1px; height: 1px; padding: 0; opacity: 0; pointer-events: none; }
+.ops-upload-preview { width: 96px; height: 96px; object-fit: cover; border: 1px solid #d8ddd9; border-radius: var(--radius-control); background: #fff; }
+.ops-upload-placeholder { display: grid; place-items: center; width: 96px; height: 96px; border: 1px dashed #c3cbc6; border-radius: var(--radius-control); color: #69736e; font-size: 13px; }
 .ops-inline-form { display: flex; gap: 16px; align-items: end; }
 .ops-notice { padding: 10px 0; color: #9a3f32; font-size: 13px; line-height: 1.6; }
 .ops-success { color: #287044; }

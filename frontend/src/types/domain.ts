@@ -387,6 +387,14 @@ export interface DishSpecRequest {
   isDefault?: boolean
 }
 
+/** 图片上传接口返回的存储信息，url 可直接写入菜品的 imageUrl。 */
+export interface ImageUploadResult {
+  url: string
+  objectName: string
+  size: number
+  contentType: string
+}
+
 export interface CartAddRequest {
   dishId: number
   dishSpecId?: number | null

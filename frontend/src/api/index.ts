@@ -19,6 +19,7 @@ import type {
   DishSaveRequest,
   DishSpec,
   DishSpecRequest,
+  ImageUploadResult,
   LoginRequest,
   Merchant,
   MerchantCategory,
@@ -184,6 +185,22 @@ export const dishApi = {
     request<DishSpec>({ method: 'put', url: `/api/dishes/${dishId}/specs/${id}`, data: payload }),
   removeSpec: (dishId: number, id: number) =>
     request<void>({ method: 'delete', url: `/api/dishes/${dishId}/specs/${id}` }),
+}
+
+/** 商家上传菜品图片；返回的 url 直接写入菜品表单。 */
+export const uploadApi = {
+  image: (file: File, scene = 'dish') => {
+    const data = new FormData()
+    data.append('file', file)
+    data.append('scene', scene)
+    // 不手动设置 Content-Type，交由 axios 生成带 boundary 的 multipart 请求头。
+    return request<ImageUploadResult>({
+      method: 'post',
+      url: '/api/merchant/uploads/images',
+      data,
+      timeout: 30_000,
+    })
+  },
 }
 
 export const cartApi = {
@@ -360,6 +377,7 @@ export type {
   DishSaveRequest,
   DishSpec,
   DishSpecRequest,
+  ImageUploadResult,
   LoginRequest,
   Merchant,
   MerchantCategory,
