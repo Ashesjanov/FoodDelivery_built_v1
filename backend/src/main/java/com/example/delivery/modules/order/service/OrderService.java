@@ -353,7 +353,8 @@ public class OrderService {
             int quantity = entry.getValue();
             int updated = dishMapper.update(null, new LambdaUpdateWrapper<Dish>().eq(Dish::getId, entry.getKey())
                     .eq(Dish::getStatus, DishStatus.ON_SALE).ge(Dish::getStock, quantity)
-                    .setSql("stock = stock - " + quantity).setSql("sales = sales + " + quantity));
+                    // 用 {0} 占位符绑定数量，避免把数值拼进 SQL 文本。
+                    .setSql("stock = stock - {0}", quantity).setSql("sales = sales + {0}", quantity));
             if (updated == 0) {
                 throw new BizException(ErrorCode.CONFLICT, "dish stock is insufficient");
             }
@@ -364,8 +365,8 @@ public class OrderService {
         Map<Long, Integer> released = new HashMap<>();
         items.forEach(item -> released.merge(item.getDishId(), item.getQuantity(), Integer::sum));
         released.forEach((dishId, quantity) -> dishMapper.update(null, new LambdaUpdateWrapper<Dish>()
-                .eq(Dish::getId, dishId).setSql("stock = stock + " + quantity)
-                .setSql("sales = GREATEST(sales - " + quantity + ", 0)")));
+                .eq(Dish::getId, dishId).setSql("stock = stock + {0}", quantity)
+                .setSql("sales = GREATEST(sales - {0}, 0)", quantity)));
     }
 
     private void settlePaymentOnCancellation(Long orderId, String reason) {

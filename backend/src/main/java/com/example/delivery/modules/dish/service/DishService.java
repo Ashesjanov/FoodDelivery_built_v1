@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.delivery.common.BizException;
 import com.example.delivery.common.ErrorCode;
 import com.example.delivery.common.PageResponse;
+import com.example.delivery.common.SqlLikeEscaper;
 import com.example.delivery.domain.entity.Dish;
 import com.example.delivery.domain.entity.DishSpec;
 import com.example.delivery.domain.enums.DishStatus;
@@ -35,14 +36,19 @@ public class DishService {
 
     public PageResponse<DishDto.DishView> page(Long merchantId, Long categoryId, String keyword, Boolean onSaleOnly,
                                                 int page, int size) {
-        Page<Dish> result = dishMapper.selectPage(new Page<>(Math.max(page, 1), Math.min(size, 200)),
+        int current = Math.max(page, 1);
+        // size 必须同时设上下限：MyBatis-Plus 在 size 为负数时会跳过分页，返回整表数据。
+        int pageSize = Math.min(Math.max(size, 1), 200);
+        // 关键字来自用户输入，先转义 LIKE 通配符再作为绑定参数传入。
+        String pattern = keyword == null || keyword.isBlank() ? null : SqlLikeEscaper.escape(keyword.trim());
+        Page<Dish> result = dishMapper.selectPage(new Page<>(current, pageSize),
                 new LambdaQueryWrapper<Dish>().eq(Dish::getMerchantId, merchantId)
                         .eq(categoryId != null, Dish::getCategoryId, categoryId)
-                        .like(keyword != null && !keyword.isBlank(), Dish::getName, keyword.trim())
+                        .like(pattern != null, Dish::getName, pattern)
                         .eq(onSaleOnly == null || onSaleOnly, Dish::getStatus, DishStatus.ON_SALE)
                         .ne(Dish::getStatus, DishStatus.DELETED).orderByAsc(Dish::getSortOrder).orderByDesc(Dish::getSales));
         return PageResponse.of(result.getRecords().stream().map(DishDto.DishView::from).toList(), result.getTotal(),
-                Math.max(page, 1), Math.min(size, 200));
+                current, pageSize);
     }
 
     public DishDto.DishDetailView detail(Long id) {
