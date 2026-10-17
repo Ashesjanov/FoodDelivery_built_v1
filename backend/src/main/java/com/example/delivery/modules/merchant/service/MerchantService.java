@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.delivery.common.BizException;
 import com.example.delivery.common.ErrorCode;
 import com.example.delivery.common.PageResponse;
+import com.example.delivery.common.SqlLikeEscaper;
 import com.example.delivery.domain.entity.Merchant;
 import com.example.delivery.domain.entity.MerchantCategory;
 import com.example.delivery.domain.entity.MerchantCategoryRel;
@@ -41,15 +42,20 @@ public class MerchantService {
     }
 
     public PageResponse<MerchantDto.MerchantView> page(int page, int size, Long categoryId, String keyword, boolean openOnly) {
-        Page<Merchant> result = merchantMapper.selectPage(new Page<>(Math.max(page, 1), Math.min(size, 200)),
+        int current = Math.max(page, 1);
+        // size 必须同时设上下限：MyBatis-Plus 在 size 为负数时会跳过分页，返回整表数据。
+        int pageSize = Math.min(Math.max(size, 1), 200);
+        // 关键字来自用户输入，先转义 LIKE 通配符再作为绑定参数传入。
+        String pattern = keyword == null || keyword.isBlank() ? null : SqlLikeEscaper.escape(keyword.trim());
+        Page<Merchant> result = merchantMapper.selectPage(new Page<>(current, pageSize),
                 new LambdaQueryWrapper<Merchant>()
                         .eq(categoryId != null, Merchant::getId, categoryIds(categoryId))
-                        .and(keyword != null && !keyword.isBlank(), q -> q.like(Merchant::getName, keyword.trim())
-                                .or().like(Merchant::getAddress, keyword.trim()))
+                        .and(pattern != null, q -> q.like(Merchant::getName, pattern)
+                                .or().like(Merchant::getAddress, pattern))
                         .eq(openOnly, Merchant::getBusinessStatus, MerchantBusinessStatus.OPEN)
                         .orderByDesc(Merchant::getRating).orderByDesc(Merchant::getMonthlySales));
         List<MerchantDto.MerchantView> views = result.getRecords().stream().map(MerchantDto.MerchantView::from).toList();
-        return PageResponse.of(views, result.getTotal(), Math.max(page, 1), Math.min(size, 200));
+        return PageResponse.of(views, result.getTotal(), current, pageSize);
     }
 
     private List<Long> categoryIds(Long categoryId) {
