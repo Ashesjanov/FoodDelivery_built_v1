@@ -22,6 +22,18 @@ export function money(value: number | string | null | undefined): string {
   return Number.isFinite(amount) ? amount.toFixed(2) : '0.00'
 }
 
+/** 图片上传的大小与格式约束，与后端 storage.minio.max-file-size 和 ImageFileValidator 保持一致。 */
+export const IMAGE_UPLOAD_MAX_BYTES = 5 * 1024 * 1024
+export const IMAGE_UPLOAD_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif'
+
+/** 选择文件后先做本地校验，返回空字符串表示可以上传。 */
+export function validateImageFile(file: File, maxBytes = IMAGE_UPLOAD_MAX_BYTES): string {
+  if (file.size <= 0) return '图片文件为空，请重新选择'
+  if (!IMAGE_UPLOAD_ACCEPT.split(',').includes(file.type)) return '仅支持 JPG、PNG、WebP、GIF 格式的图片'
+  if (file.size > maxBytes) return `图片不能超过 ${Math.round(maxBytes / 1024 / 1024)}MB`
+  return ''
+}
+
 export function dateTime(value: string | null | undefined): string {
   if (!value) return '—'
   const date = new Date(value)

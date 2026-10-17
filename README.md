@@ -122,6 +122,16 @@ npm run build
 
 可通过环境变量调整代理和运行时 API 地址：`VITE_API_BASE_URL`、`VITE_API_PROXY_TARGET`、`VITE_WS_PROXY_TARGET`、`VITE_WS_URL`、`VITE_USE_MOCK`。
 
+## 菜品图片上传
+
+商家在菜单管理页（电脑端 `/merchant/menu`、移动端 `/m/merchant/menu`）新增或编辑菜品时，可直接选择本地图片：
+
+1. 前端先做格式和大小校验，再调用 `POST /api/merchant/uploads/images`（`multipart/form-data`，字段 `file` 必填、`scene` 可选）把图片写入 MinIO。
+2. 接口返回 `{ url, objectName, size, contentType }`，前端把 `url` 填入菜品表单的图片地址。
+3. 保存菜品时仍调用 `POST /api/dishes?merchantId=...`（新建）或 `PUT /api/dishes/{id}`（编辑），图片地址作为普通字段提交。
+
+上传接口仅允许 `MERCHANT` 和 `ADMIN` 角色，支持 JPG、PNG、WebP、GIF，单张上限 5MB（`storage.minio.max-file-size` 与 `spring.servlet.multipart.max-file-size` 同时生效）。存储桶在首次上传时自动创建并设置匿名只读策略，浏览器可直接访问返回的图片地址；容器或反向代理部署时用 `MINIO_PUBLIC_ENDPOINT` 指定对浏览器可见的地址。
+
 ## 生产运行
 
 构建后端和前端：
